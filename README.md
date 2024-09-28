@@ -1,3 +1,4 @@
+
 # react-and-spring-data-rest
 
 The application has a react frontend and a Spring Boot Rest API, packaged as a single module Maven application. You can build the application using maven and run it as a Spring Boot application using the flat jar generated in target (`java -jar target/*.jar`).
@@ -25,3 +26,4 @@ You can test the main API using the following curl commands (shown with its outp
 ---
 
 To see the frontend, navigate to http://localhost:8080. You are immediately redirected to a login form. Log in as `greg/turnquist`
+
