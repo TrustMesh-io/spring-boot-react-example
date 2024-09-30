@@ -63,52 +63,6 @@ resource "aws_iam_role" "eks_role" {
   })
 }
 
-
-resource "aws_eks_node_group" "eks_workers" {
-  cluster_name    = aws_eks_cluster.main.name
-  node_role_arn   = aws_iam_role.worker_role.arn
-  subnet_ids      = [aws_subnet.public_subnet.id]
-
-  scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 1
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "worker_node_policy" {
-  role       = aws_iam_role.worker_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "cni_policy" {
-  role       = aws_iam_role.worker_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecr_readonly_policy" {
-  role       = aws_iam_role.worker_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-resource "aws_security_group_rule" "eks_api_access" {
-  type        = "ingress"
-  from_port   = 443
-  to_port     = 443
-  protocol    = "tcp"
-  security_group_id = aws_security_group.worker_sg.id
-  source_security_group_id = aws_eks_cluster.main.vpc_config[0].security_group
-}
-
-resource "aws_security_group_rule" "node_to_node_access" {
-  type        = "ingress"
-  from_port   = 1025
-  to_port     = 65535
-  protocol    = "tcp"
-  security_group_id = aws_security_group.worker_sg.id
-  source_security_group_id = aws_security_group.worker_sg.id
-}
-
 resource "aws_iam_role" "worker_role" {
   name = "worker-role"
 
@@ -126,12 +80,64 @@ resource "aws_iam_role" "worker_role" {
   })
 }
 
+resource "aws_eks_node_group" "eks_workers" {
+  cluster_name    = aws_eks_cluster.main.name
+  node_role_arn   = aws_iam_role.worker_role.arn
+  subnet_ids      = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_2.id]
+  node_group_name = "eks-workers"
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 3
+    min_size     = 1
+  }
+
+  remote_access {
+    ec2_ssh_key = "trustmesh"
+    source_security_group_ids = [aws_security_group.worker_sg.id]
+  }
+}
+
+resource "aws_security_group" "worker_sg" {
+  name_prefix = "worker-sg"
+  vpc_id      = aws_vpc.main_vpc.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 1025
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group_rule" "eks_api_access" {
+  type        = "ingress"
+  from_port   = 443
+  to_port     = 443
+  protocol    = "tcp"
+  security_group_id = aws_security_group.worker_sg.id
+  source_security_group_id = aws_security_group.worker_sg.id
+}
 
 resource "aws_db_instance" "postgres" {
   allocated_storage    = 20
   engine               = "postgres"
   instance_class       = "db.t3.micro"
-  db_name                 = "mydb"
+  db_name              = "mydb"
   username             = "postgres"
   password             = "password"
   vpc_security_group_ids = [aws_security_group.db_sg.id]
@@ -162,11 +168,26 @@ resource "aws_security_group" "db_sg" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "worker_node_policy" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_readonly_policy" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 resource "aws_ecr_repository" "my_ecr_repo" {
   name = "react-and-spring-data-rest"
   image_tag_mutability = "MUTABLE"
   image_scanning_configuration {
     scan_on_push = true
   }
-}
 
+}

@@ -14,13 +14,16 @@ spec:
     spec:
       containers:
         - name: backend
-          image: your-dockerhub-username/backend:latest
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/react-and-spring-data-rest-backend:latest
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://your-rds-endpoint:3306/devopsdb"
+              value: "jdbc:postgresql://rds-instance-xyz.eu-west-2.rds.amazonaws.com:5432/mydb"
             - name: SPRING_DATASOURCE_USERNAME
-              value: "admin"
+              value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "YourStrongPassword123"
+              valueFrom:
+                secretKeyRef:
+                  name: rds-secret
+                  key: password

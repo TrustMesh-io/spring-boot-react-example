@@ -1,0 +1,96 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code from the repository
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Set up Node.js for frontend build
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      # Build the frontend application
+      - name: Build Frontend Application
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # Build and push frontend Docker image to ECR
+      - name: Build and Push Frontend Docker Image
+        run: |
+          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+          docker build -t react-frontend:latest -f frontend/Dockerfile .
+          docker tag react-frontend:latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/react-and-spring-data-rest-frontend:latest
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/react-and-spring-data-rest-frontend:latest
+
+      # Set up JDK 11 for backend build
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+
+      # Build the backend application
+      - name: Build Backend Application
+        run: |
+          cd backend
+          mvn clean package -DskipTests
+          mv target/*.jar target/backend.jar
+
+      # Build and push backend Docker image to ECR
+      - name: Build and Push Backend Docker Image
+        run: |
+          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+          docker build -t spring-backend:latest -f backend/Dockerfile .
+          docker tag spring-backend:latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/react-and-spring-data-rest-backend:latest
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/react-and-spring-data-rest-backend:latest
+
+  deploy:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code from the repository
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'eu-west-2'
+
+      # Update kubeconfig for EKS
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name trustmesh-eks-cluster --region eu-west-2
+
+      # Deploy backend and frontend to EKS using Kubernetes manifests
+      - name: Deploy Backend to EKS
+        run: |
+          kubectl apply -f eks/backend/backend-deployment.yaml
+          kubectl apply -f eks/backend/backend-service.yaml
+
+      - name: Deploy Frontend to EKS
+        run: |
+          kubectl apply -f eks/frontend/frontend-deployment.yaml
+          kubectl apply -f eks/frontend/frontend-service.yaml
+
+      # Verify deployments and services
+      - name: Verify Backend Deployment
+        run: |
+          kubectl get deployments -n default
+          kubectl get services -n default
