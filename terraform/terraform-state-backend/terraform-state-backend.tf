@@ -1,21 +1,15 @@
 
 provider "aws" {
   region = "us-west-2"
-
 }
 
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "terraform-state-project05102024"
 
   tags = {
-    Name = "terraform-state-project05102024"
+    Name        = "terraform-state-project05102024"
     Environment = "development"
   }
-}
-
-resource "aws_s3_bucket_acl" "state_acl" {
-  bucket = aws_s3_bucket.terraform_state.id
-
 }
 
 resource "aws_s3_bucket_versioning" "versioning" {
@@ -29,7 +23,7 @@ resource "aws_s3_bucket_versioning" "versioning" {
 # Optional: Create a DynamoDB table for state locking and consistency
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = "terraform-state-lock"
-  billing_mode = "PAY_PER_REQUEST"  # Auto-scaling pricing model
+  billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
   attribute {
