@@ -1,4 +1,4 @@
-name: Setup Terraform State Backend
+name: Setup Terraform State Backend Workflow-01
 
 on:
   workflow_dispatch:
