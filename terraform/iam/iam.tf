@@ -23,11 +23,11 @@ policy = data.aws_iam_policy_document.EKSFullAccess.json
 
 
 ########################################################
-# Create the EKS Demo Group
+# Create the EKS User Group
 ########################################################
 
-resource "aws_iam_group" "EKSDemoGroup" {
-name = "EKSDemoGroup"
+resource "aws_iam_group" "EKSUserGroup" {
+name = "EKSUserGroup"
 path = "/"
 }
 
@@ -36,37 +36,37 @@ path = "/"
 ########################################################
 
 resource "aws_iam_group_policy_attachment" "AmazonEC2FullAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
 }
 resource "aws_iam_group_policy_attachment" "AmazonS3FullAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 resource "aws_iam_group_policy_attachment" "AmazonSNSReadOnlyAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/AmazonSNSReadOnlyAccess"
 }
 resource "aws_iam_group_policy_attachment" "AmazonVPCFullAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/AmazonVPCFullAccess"
 }
 resource "aws_iam_group_policy_attachment" "IAMReadOnlyAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/IAMReadOnlyAccess"
 }
 resource "aws_iam_group_policy_attachment" "AWSCloudFormationFullAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
 }
 
 resource "aws_iam_group_policy_attachment" "DynamoFullAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
 resource "aws_iam_group_policy_attachment" "EKSFullAccess" {
-group      = aws_iam_group.EKSDemoGroup.name
+group      = aws_iam_group.EKSUserGroup.name
 policy_arn = aws_iam_policy.EKSFullAccess.arn
 }
 
@@ -128,7 +128,7 @@ policy = data.aws_iam_policy_document.iamPassRole.json
 }
 
 resource "aws_iam_group_policy" "iamPassRole" {
-group  = aws_iam_group.EKSDemoGroup.name
+group  = aws_iam_group.EKSUserGroup.name
 name   = "iamPassRole"
 policy = data.aws_iam_policy_document.iamPassRole.json
 }
@@ -146,7 +146,7 @@ force_destroy = "true"
 resource "aws_iam_user_group_membership" "eksdude" {
 user = aws_iam_user.eksdude.name
 groups = [
-aws_iam_group.EKSDemoGroup.name
+aws_iam_group.EKSUserGroup.name
 ]
 }
 

@@ -191,3 +191,16 @@ resource "aws_ecr_repository" "my_ecr_repo" {
   }
 
 }
+
+# switching from local to backend state
+terraform {
+  backend "s3" {
+    region         = "eu-west-2"
+    bucket         = "terraform-state-project05102024"  # Static bucket name
+    key            = "iam/terraform.tfstate"
+    encrypt        = true  # Ensure state is encrypted
+    dynamodb_table = "terraform-state-lock"  # Static DynamoDB table name for state locking
+  }
+}
+
+
