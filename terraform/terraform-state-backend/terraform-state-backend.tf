@@ -1,7 +1,7 @@
 
 provider "aws" {
   region = "us-west-2"
-  profile = "trustmesh-774305614360-AdministratorAccess"
+
 }
 
 resource "aws_s3_bucket" "terraform_state" {
