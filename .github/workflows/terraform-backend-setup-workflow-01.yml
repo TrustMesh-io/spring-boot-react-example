@@ -30,6 +30,6 @@ jobs:
         run: terraform init
         working-directory: terraform/terraform-state-backend
 
-      - name: Apply Terraform
+      - name: Apply Terraform (Create S3 Bucket and DynamoDB)
         run: terraform apply -auto-approve
         working-directory: terraform/terraform-state-backend

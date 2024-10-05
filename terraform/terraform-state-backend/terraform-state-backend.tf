@@ -42,13 +42,9 @@ resource "aws_dynamodb_table" "terraform_locks" {
   }
 }
 
-# Backend configuration for Terraform state storage
+# Temporarily use a local backend for storing Terraform state
 terraform {
-  backend "s3" {
-    region         = "eu-west-2"
-    bucket         = "terraform-state-project05102024"  # Static bucket name
-    key            = "iam/terraform.tfstate"
-    encrypt        = true  # Ensure state is encrypted
-    dynamodb_table = "terraform-state-lock"  # Static DynamoDB table name for state locking
+  backend "local" {
+    path = "terraform.tfstate"
   }
 }
