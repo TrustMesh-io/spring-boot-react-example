@@ -1,6 +1,6 @@
 
 provider "aws" {
-  region = "us-west-2"
+  region = "eu-west-2"
 }
 
 resource "aws_s3_bucket" "terraform_state" {
@@ -39,7 +39,12 @@ resource "aws_dynamodb_table" "terraform_locks" {
 
 # Temporarily use a local backend for storing Terraform state
 terraform {
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "s3" {
+    region         = "eu-west-2"
+    bucket         = "terraform-state-project05102024"  # Static bucket name
+    key            = "iam/terraform.tfstate"
+    encrypt        = true  # Ensure state is encrypted
+    dynamodb_table = "terraform-state-lock"  # Static DynamoDB table name for state locking
   }
 }
+
