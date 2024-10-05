@@ -35,11 +35,4 @@ jobs:
           AWS_DEFAULT_REGION: eu-west-2
         working-directory: terraform/terraform-state-backend
 
-      - name: Apply Terraform (Create S3 Bucket and DynamoDB)
-        run: terraform apply -auto-approve
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          AWS_DEFAULT_REGION: eu-west-2
-        working-directory: terraform/terraform-state-backend
+
