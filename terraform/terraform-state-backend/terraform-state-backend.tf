@@ -5,8 +5,10 @@ provider "aws" {
 
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "terraform-state"
+
   tags = {
     Name = "terraform-state"
+    Environment = "development"
   }
 }
 
@@ -22,12 +24,6 @@ resource "aws_s3_bucket_versioning" "versioning" {
     status = "Enabled"
   }
 }
-
-  tags = {
-    Name        = "terraform-state"
-    Environment = "development"
-  }
-
 
 # Optional: Create a DynamoDB table for state locking and consistency
 resource "aws_dynamodb_table" "terraform_locks" {
@@ -50,11 +46,9 @@ resource "aws_dynamodb_table" "terraform_locks" {
 terraform {
   backend "s3" {
     region         = "eu-west-2"
-    bucket         = aws_s3_bucket.terraform_state.id
+    bucket         = "terraform-state"  # Static bucket name
     key            = "iam/terraform.tfstate"
     encrypt        = true  # Ensure state is encrypted
-    dynamodb_table = aws_dynamodb_table.terraform_locks.name  # Optional: Enable state locking
+    dynamodb_table = "terraform-state-lock"  # Static DynamoDB table name for state locking
   }
 }
-
-
