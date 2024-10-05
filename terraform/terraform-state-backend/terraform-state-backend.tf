@@ -4,10 +4,10 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "terraform-state"
+  bucket = "terraform-state-project05102024"
 
   tags = {
-    Name = "terraform-state"
+    Name = "terraform-state-project05102024"
     Environment = "development"
   }
 }
@@ -46,7 +46,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
 terraform {
   backend "s3" {
     region         = "eu-west-2"
-    bucket         = "terraform-state"  # Static bucket name
+    bucket         = "terraform-state-project05102024"  # Static bucket name
     key            = "iam/terraform.tfstate"
     encrypt        = true  # Ensure state is encrypted
     dynamodb_table = "terraform-state-lock"  # Static DynamoDB table name for state locking
