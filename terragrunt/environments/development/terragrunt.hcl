@@ -33,7 +33,7 @@ data "terraform_remote_state" "iam" {
   backend = "s3"
   config = {
     region = "eu-west-2"
-    bucket = "terraform-state"
+    bucket = "terraform-state-project05102024 "
     key    = "iam/terraform.tfstate"
   }
 }
