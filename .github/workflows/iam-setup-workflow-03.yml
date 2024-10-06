@@ -1,0 +1,46 @@
+name: Apply IAM Terraform Configuration
+
+on:
+  # Trigger the workflow manually or on push to a specific branch (e.g., main)
+  workflow_dispatch:
+  push:
+    branches:
+      - main  # Or replace with the branch you want to monitor
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.x  # Specify the version you're using
+
+      # Step 3: Configure AWS credentials using secrets
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      # Step 4: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform/iam  # Update with the path to your iam.tf
+
+      # Step 5: Plan Terraform changes
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: terraform/iam
+
+      # Step 6: Apply Terraform changes
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: terraform/iam
