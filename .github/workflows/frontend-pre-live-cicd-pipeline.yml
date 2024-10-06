@@ -1,0 +1,15 @@
+name: Frontend Pre-Live and Production Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Frontend UAT Pipeline"]
+    types:
+      - completed
+
+jobs:
+  pre_live_and_production:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses

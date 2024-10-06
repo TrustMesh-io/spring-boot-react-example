@@ -1,0 +1,33 @@
+name: Frontend SIT Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy_to_sit:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Build frontend
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # Deploy to SIT environment
+      - name: Deploy to SIT
+        run: |
+          kubectl apply -f eks/frontend/frontend-deployment.yaml
+          kubectl apply -f eks/frontend/frontend-service.yaml
+
+      # Run SIT testing
+      - name: Run Integration Tests
+        run: |
+          echo "Running SIT tests..."

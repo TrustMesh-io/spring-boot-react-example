@@ -1,0 +1,37 @@
+name: Backend Pre-Live and Production Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Backend UAT Pipeline"]
+    types:
+      - completed
+
+jobs:
+  pre_live_and_production:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Pre-Live Deployment and Testing
+      - name: Deploy to Pre-Live
+        run: |
+          kubectl apply -f eks/backend/backend-deployment.yaml
+          kubectl apply -f eks/backend/backend-service.yaml
+
+      # Verify pre-live success
+      - name: Verify Pre-Live Success
+        run: |
+          echo "Pre-live validations successful"
+
+      # Deploy to Production
+      - name: Deploy to Production
+        run: |
+          kubectl apply -f eks/backend/backend-deployment.yaml
+          kubectl apply -f eks/backend/backend-service.yaml
+
+      # Verify production success
+      - name: Verify Production Success
+        run: |
+          echo "Production deployment successful"

@@ -1,0 +1,26 @@
+name: Frontend NIT Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Frontend SIT Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy_and_test_nit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Deploy to NIT environment
+      - name: Deploy to NIT
+        run: |
+          kubectl apply -f eks/frontend/frontend-deployment.yaml
+          kubectl apply -f eks/frontend/frontend-service.yaml
+
+      # Run JMeter tests for frontend
+      - name: Run JMeter Tests
+        run: |
+          jmeter -n -t frontend-load-tests.jmx -l results.jtl

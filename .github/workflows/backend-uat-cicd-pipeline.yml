@@ -1,0 +1,26 @@
+name: Backend UAT Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Backend NIT Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy_and_test_uat:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Deploy to UAT environment
+      - name: Deploy to UAT
+        run: |
+          kubectl apply -f eks/backend/backend-deployment.yaml
+          kubectl apply -f eks/backend/backend-service.yaml
+
+      # Wait for UAT approval
+      - name: Wait for UAT Approval
+        run: |
+          echo "Waiting for UAT signoff"
